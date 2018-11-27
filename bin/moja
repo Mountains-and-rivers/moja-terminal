@@ -1,0 +1,76 @@
+#!/usr/bin/env node
+
+var pkg = require('../package.json'),
+  cst = require('../lib/constants.js'),
+  operation = require('../lib/operation.js'),
+  chalk = require('chalk'),
+	commander = require('commander');
+
+if (process.argv.indexOf('-v') > -1) {
+  console.log(pkg.version);
+  process.exit(0);
+}
+
+commander.version(pkg.version)
+  .option('-v --version', 'print moja-terminal version')
+  .usage('[cmd] app');
+
+function displayUsage() {
+  console.log('usage: moja [options] <command>')
+  console.log('');
+  console.log('moja -h, --help             all available commands and options');
+  console.log('moja examples               display moja-terminal usage examples');
+  console.log('moja <command> -h           help on a specific command');
+  console.log('');
+  console.log('Access moja files in ~/.moja');
+}
+
+function displayExamples() {
+  console.log('- Start and add a process to the moja process list:')
+  console.log('');
+  console.log(chalk.cyan('  $ moja start '));
+  console.log('');
+  console.log('- Set the user key:');
+  console.log('');
+  console.log(chalk.cyan('  $ moja set-key xxxx'));
+  console.log('');
+  console.log('- Download file from client:');
+  console.log('');
+  console.log(chalk.cyan('  $ moja download filename'));
+  console.log('');
+  console.log('Check the full documentation on https://github.com/Ali-IoT-Lab/moja-terminal');
+  console.log('');
+}
+commander.command('set-key')
+  .description('set user key')
+  .action(function(cmd, opts) {
+    console.log('set user key ...');
+    operation.set_key(cmd)
+  });
+
+commander.command('start')
+  .description('start client app')
+  .action(function(cmd, opts) {
+    operation.start()
+  });
+commander.command('download')
+  .description('download client file')
+  .action(function(cmd, opts) {
+    operation.download(cmd)
+  });
+commander.command('examples')
+  .description('display moja usage examples')
+  .action(() => {
+    console.log(cst.PREFIX_MSG + chalk.grey('moja usage examples:\n'));
+    displayExamples();
+    process.exit(cst.SUCCESS_EXIT);
+  });
+commander.command('*')
+  .action(function() {
+    console.log(cst.PREFIX_MSG + 'Command not found\n');
+    displayUsage();
+    // Check if it does not forget to close fds from RPC
+    process.exit(cst.ERROR_EXIT);
+  });
+
+commander.parse(process.argv);
